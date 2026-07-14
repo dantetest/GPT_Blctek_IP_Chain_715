@@ -10,6 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dantetest/GPT_Blctek_IP_Chain_715/apps/api/internal/dataset/application"
+	"github.com/dantetest/GPT_Blctek_IP_Chain_715/apps/api/internal/dataset/infrastructure/memory"
+	"github.com/dantetest/GPT_Blctek_IP_Chain_715/apps/api/internal/dataset/transport/httpapi"
 	"github.com/dantetest/GPT_Blctek_IP_Chain_715/apps/api/internal/platform/config"
 	"github.com/dantetest/GPT_Blctek_IP_Chain_715/apps/api/internal/platform/httpx"
 )
@@ -24,23 +27,19 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
-		httpx.WriteJSON(w, http.StatusOK, httpx.Envelope{
-			Code:    "HEALTHY",
-			Message: "service is healthy",
-			Data:    map[string]string{"service": "api"},
-		})
+		httpx.WriteJSON(w, http.StatusOK, httpx.Envelope{Code: "HEALTHY", Message: "service is healthy", Data: map[string]string{"service": "api"}})
 	})
 	mux.HandleFunc("GET /readyz", func(w http.ResponseWriter, _ *http.Request) {
-		httpx.WriteJSON(w, http.StatusOK, httpx.Envelope{
-			Code:    "READY",
-			Message: "service is ready",
-		})
+		httpx.WriteJSON(w, http.StatusOK, httpx.Envelope{Code: "READY", Message: "service is ready"})
 	})
 
-	handler := httpx.RequestID(mux)
+	repository := memory.NewRepository()
+	service := application.NewService(repository, application.RandomIDGenerator{}, nil)
+	httpapi.New(service).Register(mux)
+
 	server := &http.Server{
 		Addr:              cfg.Address,
-		Handler:           handler,
+		Handler:           httpx.RequestID(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
@@ -49,7 +48,6 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-
 	go func() {
 		logger.Info("api listening", "address", cfg.Address, "environment", cfg.Environment)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -57,7 +55,6 @@ func main() {
 			stop()
 		}
 	}()
-
 	<-ctx.Done()
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
