@@ -1,0 +1,74 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: |
+            apps/api/go.mod
+            apps/data-agent/go.mod
+            apps/worker/go.mod
+            packages/manifest-spec/go.mod
+            packages/manifest-spec/go.sum
+      - name: Format check
+        run: test -z "$(gofmt -l $(find apps packages -name '*.go' -type f))"
+      - name: Unit tests
+        run: go test ./apps/api/... ./apps/worker/... ./apps/data-agent/... ./packages/manifest-spec/...
+      - name: Vet
+        run: go vet ./apps/api/... ./apps/worker/... ./apps/data-agent/... ./packages/manifest-spec/...
+
+  manifest-cross-platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: |
+            packages/manifest-spec/go.mod
+            packages/manifest-spec/go.sum
+      - name: Run Manifest v1 vectors
+        run: go test ./packages/manifest-spec/...
+
+  repository-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON files
+        run: |
+          python -m json.tool apps/web/package.json >/dev/null
+          python -m json.tool apps/web/tsconfig.json >/dev/null
+          python -m json.tool packages/manifest-spec/testdata/vectors.json >/dev/null
+      - name: Check migration pairs
+        run: |
+          set -eu
+          for up in database/migrations/*.up.sql; do
+            down="${up%.up.sql}.down.sql"
+            test -f "$down" || { echo "missing migration pair: $down"; exit 1; }
+          done
+          for down in database/migrations/*.down.sql; do
+            up="${down%.down.sql}.up.sql"
+            test -f "$up" || { echo "missing migration pair: $up"; exit 1; }
+          done
+      - name: Reject committed environment secrets
+        run: |
+          if find . -path './.git' -prune -o -name '.env' -print | grep -q .; then
+            echo '.env files must not be committed'
+            exit 1
+          fi

@@ -1,0 +1,24 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Go
+bin/
+coverage.out
+*.test
+
+# Node
+node_modules/
+.next/
+out/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Runtime data
+.data/
+logs/
