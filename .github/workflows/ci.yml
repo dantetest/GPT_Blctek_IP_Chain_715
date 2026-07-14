@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: |
+            apps/api/go.mod
+            apps/worker/go.mod
+      - name: Format check
+        run: test -z "$(gofmt -l $(find apps -name '*.go' -type f))"
+      - name: Unit tests
+        run: go test ./apps/api/... ./apps/worker/...
+      - name: Vet
+        run: go vet ./apps/api/... ./apps/worker/...
+
+  repository-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON files
+        run: python -m json.tool apps/web/package.json >/dev/null && python -m json.tool apps/web/tsconfig.json >/dev/null
+      - name: Check migration pairs
+        run: |
+          test -f database/migrations/000001_platform_foundation.up.sql
+          test -f database/migrations/000001_platform_foundation.down.sql
+      - name: Reject committed environment secrets
+        run: |
+          if find . -path './.git' -prune -o -name '.env' -print | grep -q .; then
+            echo '.env files must not be committed'
+            exit 1
+          fi
