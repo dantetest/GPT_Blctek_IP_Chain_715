@@ -1,13 +1,13 @@
 .PHONY: fmt test vet check run-api run-worker infra-up infra-down
 
 fmt:
-	gofmt -w $$(find apps -name '*.go' -type f)
+	gofmt -w $$(find apps packages -name '*.go' -type f)
 
 test:
-	go test ./apps/api/... ./apps/worker/...
+	go test ./apps/api/... ./apps/worker/... ./packages/manifest-spec/...
 
 vet:
-	go vet ./apps/api/... ./apps/worker/...
+	go vet ./apps/api/... ./apps/worker/... ./packages/manifest-spec/...
 
 check: fmt test vet
 

@@ -2,31 +2,52 @@
 
 ## Repository baseline
 
-The repository was empty before this iteration. No legacy production code or database migration exists, so there is no backward-compatibility burden yet.
+The repository started empty. There is no legacy production code or migration compatibility burden.
 
-## Implemented in this iteration
+## Implemented
 
-- Deterministic Go workspace with API and Worker modules;
-- API health and readiness endpoints;
-- strict environment validation, including production Mock Provider rejection;
-- Request ID propagation and input sanitization;
-- structured response envelope and problem type;
-- idempotency-key parser;
-- Outbox event and retry policy model;
-- MySQL tables for idempotency, Outbox, Provider Callback Inbox, and admin audit logs;
-- minimal Next.js landing page;
-- Docker Compose infrastructure;
-- CI baseline and ADRs.
+### Platform foundation
+
+- deterministic Go workspace with API and Worker modules;
+- health and readiness endpoints;
+- production Mock Provider rejection;
+- Request ID propagation;
+- idempotency-key validation;
+- Outbox retry model;
+- reliability database tables;
+- minimal Next.js shell;
+- Docker Compose infrastructure and CI.
+
+### Dataset foundation
+
+- mutable Dataset product identity;
+- immutable-after-publication Dataset Version aggregate;
+- explicit review and publication state transitions;
+- license and rights snapshots;
+- optimistic revision fields;
+- Dataset catalog migration and append-only status event table.
+
+### Manifest v1
+
+- streaming SHA-256 file hashing;
+- 4 MiB chunks;
+- UTF-8 NFC canonical paths;
+- symbolic-link and traversal rejection;
+- domain-separated file, leaf, node, and empty hashes;
+- deterministic Merkle tree;
+- static vectors;
+- Linux, Windows, and macOS CI matrix.
 
 ## Explicitly not implemented yet
 
-- authentication, organizations, KYC;
-- Dataset and Dataset Version;
-- Manifest and Data Agent;
-- orders and payment providers;
+- persistent Dataset repository and HTTP APIs;
+- authentication, organizations, and KYC;
+- Data Agent CLI and scan checkpoints;
+- quality reports and previews;
+- orders and payment Providers;
 - private P2P delivery;
-- settlement, ledger, refunds, disputes, and evidence providers.
+- settlement, Ledger, refunds, disputes, and evidence Providers.
 
-## Legacy disposition
+## Next slice
 
-There is no legacy code in this repository. Future changes must preserve executed migrations and use explicit state transitions.
+Implement the persistent Dataset repository and Dataset APIs, then create the first Data Agent CLI around Manifest v1.

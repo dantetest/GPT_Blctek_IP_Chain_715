@@ -1,0 +1,28 @@
+[
+  {
+    "name": "empty-dataset",
+    "root_hash": "2256e7656dfb390c29cff2328047f7a515a36dbd6a21f7cd35dcc08ae5de4222",
+    "files": []
+  },
+  {
+    "name": "basic-unicode",
+    "root_hash": "6f55fccd06de3715a47fb24dd9cf0843b05c51a90ab2140f2ca842ff4dc4e741",
+    "files": [
+      {
+        "path": "empty.txt",
+        "content_base64": "",
+        "file_hash": "3b41ac222fe17035332921b243d6a628cfd88fc22998128a9a2fe0ec2c13d386"
+      },
+      {
+        "path": "hello.txt",
+        "content_base64": "aGVsbG8K",
+        "file_hash": "e434fdcfa322b1f5a79af0de6858b95bdfd901d6607a348faf0b5a5759708d96"
+      },
+      {
+        "path": "nested/数据.csv",
+        "content_base64": "aWQsbmFtZQoxLOa1i+ivlQo=",
+        "file_hash": "29d1158ac9551a911e138ccc1d02617391201850711ab6679ad1789fe07a151b"
+      }
+    ]
+  }
+]

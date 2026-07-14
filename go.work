@@ -3,4 +3,5 @@ go 1.23
 use (
 	./apps/api
 	./apps/worker
+	./packages/manifest-spec
 )
