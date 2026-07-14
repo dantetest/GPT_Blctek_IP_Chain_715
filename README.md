@@ -12,6 +12,7 @@ AI训练数据登记存证、合规辅助审查与受控交易平台。
 - MySQL可靠性基础表；
 - Dataset与不可变Dataset Version领域模型；
 - Manifest v1流式哈希、NFC路径规范和Merkle Root；
+- 首个Data Agent CLI，可扫描目录并原子写出Manifest JSON；
 - 静态Manifest测试向量与三操作系统CI；
 - Next.js前端目录骨架；
 - MySQL、Redis、MinIO本地编排；
@@ -33,6 +34,14 @@ curl http://localhost:8080/readyz
 ```
 
 Manifest规范：`docs/MANIFEST_SPEC_V1.md`。
+
+生成Manifest：
+
+```bash
+go run ./apps/data-agent/cmd/agent manifest \
+  --root ./example-dataset \
+  --output ./.data/manifest.json
+```
 
 ## 施工规则
 

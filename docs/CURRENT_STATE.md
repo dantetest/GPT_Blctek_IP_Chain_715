@@ -38,11 +38,20 @@ The repository started empty. There is no legacy production code or migration co
 - static vectors;
 - Linux, Windows, and macOS CI matrix.
 
+### Data Agent CLI
+
+- `manifest` command;
+- directory scanning through the canonical Manifest package;
+- deterministic `--created-at` support for testing;
+- atomic JSON output replacement;
+- machine-readable scan summary;
+- command-level tests.
+
 ## Explicitly not implemented yet
 
 - persistent Dataset repository and HTTP APIs;
 - authentication, organizations, and KYC;
-- Data Agent CLI and scan checkpoints;
+- Data Agent scan checkpoints, device registration, and seeding;
 - quality reports and previews;
 - orders and payment Providers;
 - private P2P delivery;
@@ -50,4 +59,4 @@ The repository started empty. There is no legacy production code or migration co
 
 ## Next slice
 
-Implement the persistent Dataset repository and Dataset APIs, then create the first Data Agent CLI around Manifest v1.
+Implement the persistent Dataset repository and Dataset APIs, then add resumable Data Agent scan checkpoints.

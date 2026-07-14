@@ -18,15 +18,16 @@ jobs:
           go-version: '1.23.x'
           cache-dependency-path: |
             apps/api/go.mod
+            apps/data-agent/go.mod
             apps/worker/go.mod
             packages/manifest-spec/go.mod
             packages/manifest-spec/go.sum
       - name: Format check
         run: test -z "$(gofmt -l $(find apps packages -name '*.go' -type f))"
       - name: Unit tests
-        run: go test ./apps/api/... ./apps/worker/... ./packages/manifest-spec/...
+        run: go test ./apps/api/... ./apps/worker/... ./apps/data-agent/... ./packages/manifest-spec/...
       - name: Vet
-        run: go vet ./apps/api/... ./apps/worker/... ./packages/manifest-spec/...
+        run: go vet ./apps/api/... ./apps/worker/... ./apps/data-agent/... ./packages/manifest-spec/...
 
   manifest-cross-platform:
     strategy:

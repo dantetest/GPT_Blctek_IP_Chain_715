@@ -1,13 +1,13 @@
-.PHONY: fmt test vet check run-api run-worker infra-up infra-down
+.PHONY: fmt test vet check run-api run-worker run-agent infra-up infra-down
 
 fmt:
 	gofmt -w $$(find apps packages -name '*.go' -type f)
 
 test:
-	go test ./apps/api/... ./apps/worker/... ./packages/manifest-spec/...
+	go test ./apps/api/... ./apps/worker/... ./apps/data-agent/... ./packages/manifest-spec/...
 
 vet:
-	go vet ./apps/api/... ./apps/worker/... ./packages/manifest-spec/...
+	go vet ./apps/api/... ./apps/worker/... ./apps/data-agent/... ./packages/manifest-spec/...
 
 check: fmt test vet
 
@@ -16,6 +16,9 @@ run-api:
 
 run-worker:
 	go run ./apps/worker/cmd/worker
+
+run-agent:
+	go run ./apps/data-agent/cmd/agent --help
 
 infra-up:
 	docker compose up -d mysql redis minio
