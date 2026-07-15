@@ -29,6 +29,41 @@ jobs:
       - name: Vet
         run: go vet ./apps/api/... ./apps/worker/... ./apps/data-agent/... ./packages/manifest-spec/...
 
+  dataset-mysql-integration:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: blctekip
+          MYSQL_USER: blctekip
+          MYSQL_PASSWORD: blctekip
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: apps/api/go.mod
+      - name: Apply migrations
+        env:
+          MYSQL_PWD: blctekip
+        run: |
+          for migration in database/migrations/*.up.sql; do
+            mysql --protocol=tcp -h 127.0.0.1 -u blctekip blctekip < "$migration"
+          done
+      - name: Run MySQL repository integration test
+        env:
+          MYSQL_TEST_DSN: blctekip:blctekip@tcp(127.0.0.1:3306)/blctekip?parseTime=true&charset=utf8mb4&collation=utf8mb4_unicode_ci
+        run: go test ./apps/api/internal/dataset/infrastructure/mysql -run TestRepositoryIntegration -count=1
+
   manifest-cross-platform:
     strategy:
       fail-fast: false
