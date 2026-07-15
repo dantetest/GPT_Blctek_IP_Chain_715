@@ -85,7 +85,14 @@ func (r *Repository) CreateVersion(ctx context.Context, version domain.DatasetVe
 
 func (r *Repository) GetVersion(ctx context.Context, id string) (domain.DatasetVersion, error) {
 	row := r.db.QueryRowContext(ctx, `SELECT `+versionColumns+` FROM dataset_versions WHERE id = ?`, id)
-	return scanVersion(row)
+	value, err := scanVersion(row)
+	if err != nil {
+		return domain.DatasetVersion{}, err
+	}
+	if err := r.loadCompliance(ctx, &value); err != nil {
+		return domain.DatasetVersion{}, err
+	}
+	return value, nil
 }
 
 func (r *Repository) ListVersions(ctx context.Context, datasetID string) ([]domain.DatasetVersion, error) {
@@ -102,7 +109,15 @@ func (r *Repository) ListVersions(ctx context.Context, datasetID string) ([]doma
 		}
 		values = append(values, value)
 	}
-	return values, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	for i := range values {
+		if err := r.loadCompliance(ctx, &values[i]); err != nil {
+			return nil, err
+		}
+	}
+	return values, nil
 }
 
 func (r *Repository) UpdateVersion(ctx context.Context, version domain.DatasetVersion, expectedRevision uint64, event *domain.VersionEvent) error {
@@ -120,6 +135,13 @@ func (r *Repository) UpdateVersion(ctx context.Context, version domain.DatasetVe
 		return mapWriteError(err)
 	}
 	if err := requireAffected(result, domain.ErrRevisionConflict); err != nil {
+		return err
+	}
+	actorID := ""
+	if event != nil {
+		actorID = event.ActorID
+	}
+	if err := persistCompliance(ctx, tx, version, actorID); err != nil {
 		return err
 	}
 	if event != nil {
